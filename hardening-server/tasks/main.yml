@@ -1,0 +1,85 @@
+---
+- name: Create a login user
+  ansible.builtin.user:
+      name: deployer
+      password: '$6$iMNClsUEOVAFcGs0$f/siPQ9SnhjWRekhTLRxZIZWWmWnz5lmlfQ846znys9nyBujw1gDIyK8nc0IHdVesHYBGFZyhO3qRlvGWch4p/'
+      groups: 
+       - sudo
+      state: present
+      shell: /bin/bash      
+      system: no            
+      createhome: yes        
+      home: /home/deployer
+      tags: hardening-shh
+  
+- name: Creates directory
+  ansible.builtin.file:
+    path: /home/deployer/.ssh
+    state: directory
+    mode: '0700'
+    owner: deployer
+    tags: hardening-shh
+
+- name: Create a new file with permissions
+  ansible.builtin.file:
+      path: "/home/deployer/.ssh/authorized_keys"
+      state: touch
+      mode: '0600'
+      tags: hardening-shh
+
+- name: Copy Public key
+  ansible.builtin.copy:
+      src: "/root/.ssh/authorized_keys"
+      dest: "/home/deployer/.ssh"
+      tags: hardening-shh
+
+- name: Setup alternate sshd config
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regex: "^(#)?{{item.name}}"
+    line: "{{item.groups}}"
+  loop:
+    -  { name: 'Port', groups: Port 1999 }
+    -  { name: 'PubkeyAuthentication', groups: PubkeyAuthentication yes }
+    -  { name: 'PubkeyAuthentication', groups: PubkeyAuthentication yes }
+    -  { name: 'PasswordAuthentication', groups: PasswordAuthentication no  }
+    -  { name: 'AllowAgentForwarding', groups: AllowAgentForwarding no  }
+    -  { name: 'AllowTcpForwarding', groups: AllowTcpForwarding no  }
+    -  { name: 'X11Forwarding', groups: X11Forwarding no  }
+    -  { name: 'PrintMotd', groups: PrintMotd no  }
+    -  { name: 'TCPKeepAlive', groups: TCPKeepAlive no  }
+    -  { name: 'Compression', groups: Compression no  }
+    -  { name: 'ClientAliveCountMax', groups: ClientAliveCountMax 2  }
+    -  { name: 'AllowUsers', groups: AllowUsers root,deployer }
+    -  { name: 'AllowGroups', groups: AllowGroups root,deployer  }
+    -  { name: 'UsePAM', groups: UsePAM yes  }
+    -  { name: 'ChallengeResponseAuthentication', groups: ChallengeResponseAuthentication no  }
+    -  { name: 'MaxAuthTries', groups: MaxAuthTries 3  }
+    -  { name: 'MaxSessions', groups: MaxSessions 2  }
+    -  { name: 'LogLevel', groups: LogLevel VERBOSE  }
+    -  { name: 'ListenAddress', groups: ListenAddress 0.0.0.0  }
+
+  notify: Restart ssh service 
+  tags: hardening-ssh
+   
+
+- name: Update and upgrade apt packages
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400
+    tags: update
+
+- name: Install basic tools
+  apt:
+    name: "{{ packages }}"
+    state: present
+    force_apt_get: yes
+    update_cache: yes
+    tags: update
+ 
+
+
+
+
+

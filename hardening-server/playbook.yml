@@ -1,0 +1,6 @@
+---
+- name: hardening Server
+  hosts: web-service
+  gather_facts: 'true'
+  roles:
+    - /root/roles/hardening-server
