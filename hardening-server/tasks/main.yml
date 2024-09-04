@@ -10,7 +10,6 @@
       system: no            
       createhome: yes        
       home: /home/deployer
-      tags: hardening-shh
   
 - name: Creates directory
   ansible.builtin.file:
@@ -18,20 +17,17 @@
     state: directory
     mode: '0700'
     owner: deployer
-    tags: hardening-shh
 
 - name: Create a new file with permissions
   ansible.builtin.file:
       path: "/home/deployer/.ssh/authorized_keys"
       state: touch
       mode: '0600'
-      tags: hardening-shh
 
 - name: Copy Public key
   ansible.builtin.copy:
       src: "/root/.ssh/authorized_keys"
       dest: "/home/deployer/.ssh"
-      tags: hardening-shh
 
 - name: Setup alternate sshd config
   ansible.builtin.lineinfile:
@@ -41,15 +37,21 @@
     state: present
   with_dict: '{{ sshd_config }}'
   notify: Restart ssh service 
-  tags: hardening-ssh
    
 
+- name: Copy ssh banner file
+  copy:
+    src: ssh_banner
+    dest: /etc/issue
+
+
+
+    
 - name: Update and upgrade apt packages
   apt:
     upgrade: yes
     update_cache: yes
     cache_valid_time: 86400
-    tags: update
 
 - name: Install basic tools
   apt:
@@ -57,7 +59,6 @@
     state: present
     force_apt_get: yes
     update_cache: yes
-    tags: update
  
 
 
