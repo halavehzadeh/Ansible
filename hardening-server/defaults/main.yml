@@ -1,4 +1,26 @@
 ---
+sshd_config:
+  PermitRootLogin: "no"
+  Port: "2222"
+  PubkeyAuthentication: "yes"
+  PasswordAuthentication: "no"
+  AllowAgentForwarding: "no"
+  AllowTcpForwarding: "no"
+  X11Forwarding: "no"
+  PrintMotd: "no"
+  TCPKeepAlive: "no"
+  Compression: "no"
+  ClientAliveCountMax: "2"
+  AllowUsers: "deployer"
+  AllowGroups: "deployer"
+  UsePAM: "yes"
+  ChallengeResponseAuthentication: "no"
+  MaxAuthTries: "3"
+  MaxSessions: "2"
+  LogLevel: "VERBOSE"
+  ListenAddress: "0.0.0.0"
+
+
 packages:
   - sysstat
   - wget
