@@ -1,0 +1,29 @@
+---
+- name: Set timezone to Asia/Tehran
+  community.general.timezone:
+    name: Asia/Tehran
+  notify: Restart ntp
+
+- name: Change various sysctl-settings
+  sysctl:
+    name: "{{ item.key }}"
+    state: present
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/echoamir.conf
+    reload: yes
+    ignoreerrors: yes
+  with_dict: '{{ sysctl_config }}'
+
+
+- name: Config resolv.conf file 
+  become: 'yes'
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    backup: 'yes'
+    mode: 0644
+    owner: root
+    group: root
+ 
+  notify: Disable ufw
+ 
