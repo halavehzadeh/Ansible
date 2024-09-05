@@ -1,9 +1,9 @@
 ---
 - name: Set timezone to Asia/Tehran
+  become: true
   community.general.timezone:
     name: Asia/Tehran
   notify: Restart ntp
-
 - name: Change various sysctl-settings
   sysctl:
     name: "{{ item.key }}"
@@ -13,7 +13,6 @@
     reload: yes
     ignoreerrors: yes
   with_dict: '{{ sysctl_config }}'
-
 
 - name: Config resolv.conf file 
   become: 'yes'

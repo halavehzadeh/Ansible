@@ -8,6 +8,6 @@
 - name: Disable ufw
   systemd:
     name: ufw
-    state: disabled
+    state: stopped
 
 
