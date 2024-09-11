@@ -1,1 +1,44 @@
 
+---
+- name: Harden iptables on Debian Linux
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Install iptables if not already installed
+      apt:
+        name: iptables
+        state: present
+
+    - name: Flush existing iptables rules
+      command: iptables -F
+
+    - name: Set default INPUT policy to DROP
+      command: iptables -P INPUT DROP
+
+    - name: Set default FORWARD policy to DROP
+      command: iptables -P FORWARD DROP
+
+    - name: Set default OUTPUT policy to ACCEPT
+      command: iptables -P OUTPUT ACCEPT
+
+    - name: Allow established and related connections
+      command: iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    - name: Allow loopback traffic
+      command: iptables -A INPUT -i lo -j ACCEPT
+
+    - name: Allow SSH traffic on port 22
+      command: iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+    - name: Drop all other incoming traffic
+      command: iptables -A INPUT -j DROP
+
+    - name: Save iptables rules
+      shell: iptables-save > /etc/iptables/rules.v4
+      notify: Save iptables rules
+
+  handlers:
+    - name: Save iptables rules
+      command: /sbin/iptables-save
+
